@@ -145,7 +145,7 @@ training.loc[(training.date.dt.day > 20), "end_month"] = 1
 # Begin loop
 n_training_days = len(np.unique(full["day"]))
 
-testing_days_used = np.unique(full2["day"])[3:] # change this number to change the no. of testing days
+testing_days_used = np.unique(full2["day"])[0:] # change this number to change the no. of testing days
 n_testing_days = len(testing_days_used)
 
 
@@ -160,7 +160,7 @@ true_neg = []
 
 for q in range(n_testing_days):
     
-    test_day = n_training_days + q
+    test_day = n_training_days + testing_days_used[q]
 
     print("*************************************************************************")
     print("Solving model for test day", test_day, "...")
