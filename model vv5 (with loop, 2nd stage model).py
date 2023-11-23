@@ -145,7 +145,7 @@ training.loc[(training.date.dt.day > 20), "end_month"] = 1
 # Begin loop
 n_training_days = len(np.unique(full["day"]))
 
-testing_days_used = np.unique(full2["day"]) # change this number to change the no. of testing days
+testing_days_used = np.unique(full2["day"])[3:] # change this number to change the no. of testing days
 n_testing_days = len(testing_days_used)
 
 
@@ -352,10 +352,10 @@ for q in range(n_testing_days):
     true_neg_p3 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 0) & (full2["priority"] == 3)])[0]
     true_neg_p4 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 0) & (full2["priority"] == 4)])[0]
     
-    false_positive_p1 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 0) & (full2["priority"] == 1)])[0]
-    false_positive_p2 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 0) & (full2["priority"] == 2)])[0]
-    false_positive_p3 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 0) & (full2["priority"] == 3)])[0]
-    false_positive_p4 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 0) & (full2["priority"] == 4)])[0]
+    false_positive_p1 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 1) & (full2["priority"] == 1)])[0]
+    false_positive_p2 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 1) & (full2["priority"] == 2)])[0]
+    false_positive_p3 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 1) & (full2["priority"] == 3)])[0]
+    false_positive_p4 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 1) & (full2["priority"] == 4)])[0]
 
 
     end = tm.time()
