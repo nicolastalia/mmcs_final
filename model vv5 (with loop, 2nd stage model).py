@@ -144,7 +144,7 @@ training.loc[(training.date.dt.day > 20), "end_month"] = 1
 # Begin loop
 n_training_days = len(np.unique(full["day"]))
 
-testing_days_used = np.unique(full2["day"])[30:31] # change this number to change the no. of testing days
+testing_days_used = np.unique(full2["day"])[0:2] # change this number to change the no. of testing days
 n_testing_days = len(testing_days_used)
 
 
@@ -367,10 +367,10 @@ for q in range(n_testing_days):
     # I want to find a list of the cases investigated
     # scam amount gained (investigated) per bank
     full2["bank_from"] = full2["bank_from"].astype('category')
-    bank_gain.append(full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 1)].groupby(["bank_from"])["Amount"].sum().fillna(0).astype(int).to_numpy())
+    bank_gain.append(full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 1)].groupby(["bank_from"])["Amount"].sum().fillna(0).astype(float).to_numpy())
 
     # scam lost pet bank
-    bank_loss_scams.append(full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 0)].groupby(["bank_from"])["Amount"].sum().fillna(0).astype(int).to_numpy())
+    bank_loss_scams.append(full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 0)].groupby(["bank_from"])["Amount"].sum().fillna(0).astype(float).to_numpy())
 
     # total lost per bank
     temporary_ext = full2.loc[full2["externally_investigated"] == 1]
@@ -386,7 +386,7 @@ for q in range(n_testing_days):
     bank_d_ext = sum(temporary_ext["bank_D"] * temporary_ext["ext_cost"])
     bank_e_ext = sum(temporary_ext["bank_E"] * temporary_ext["ext_cost"])
     vec_bank_ext_loss = np.array([bank_a_ext, bank_b_ext, bank_c_ext, bank_d_ext, bank_e_ext])
-    bank_loss_scams_ext.append(vec_bank_ext_loss + full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 0)].groupby(["bank_from"])["Amount"].sum().fillna(0).astype(int).to_numpy())
+    bank_loss_scams_ext.append(vec_bank_ext_loss + full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 0)].groupby(["bank_from"])["Amount"].sum().fillna(0).astype(float).to_numpy())
 
     end = tm.time()
     loss_value_mem_scams.append(sum(full2[(full2["decided_investigations"] == 0) & (full2["is_scam"] == 1)]["Amount"]))
@@ -448,6 +448,6 @@ for q in range(n_testing_days):
                                                        bank_A_loss_scams_ext, bank_B_loss_scams_ext, bank_C_loss_scams_ext, bank_D_loss_scams_ext, bank_E_loss_scams_ext)], delimiter=',', fmt='%s',
                                                        header="test_day,gain_value,loss_value_scams,total_loss,prio1_det,prio2_det,prio3_det,prio4_det,prio1_undet,prio2_undet,prio3_undet,prio4_undet,prio1_false_positive,prio2_false_positive,prio3_false_positive,prio4_false_positive,prio1_true_neg,prio2_true_neg,prio3_true_neg,prio4_true_neg,bank_A_gain,bank_B_gain,bank_C_gain,bank_D_gain,bank_E_gain,bank_A_loss_scams,bank_B_loss_scams,bank_C_loss_scams,bank_D_loss_scams,bank_E_loss_scams,bank_A_loss_scams_ext,bank_B_loss_scams_ext,bank_C_loss_scams_ext,bank_D_loss_scams_ext,bank_E_loss_scams_ext", 
                                                        comments="")
-    temp_new_df = pd.DataFrame({'test_day': test_day, 'invst': full2.loc[full2["decided_investigations"] == 1]["transaction_id"].to_numpy()})
+    temp_new_df = pd.DataFrame({'test_day': test_day, 'invest': full2.loc[full2["decided_investigations"] == 1]["transaction_id"].to_numpy()})
     df_mem = pd.concat([df_mem, temp_new_df], ignore_index = True)
     df_mem.to_csv(f"!day {test_day} investigations.csv", index = False)
