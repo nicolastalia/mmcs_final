@@ -366,10 +366,11 @@ for q in range(n_testing_days):
 
     # I want to find a list of the cases investigated
     # scam amount gained (investigated) per bank
-    bank_gain.append(full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 1)].groupby(["bank_from"])["Amount"].sum().to_numpy())
+    full2["bank_from"] = full2["bank_from"].astype('category')
+    bank_gain.append(full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 1)].groupby(["bank_from"])["Amount"].sum().fillna(0).astype(int).to_numpy())
 
     # scam lost pet bank
-    bank_loss_scams.append(full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 0)].groupby(["bank_from"])["Amount"].sum().to_numpy())
+    bank_loss_scams.append(full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 0)].groupby(["bank_from"])["Amount"].sum().fillna(0).astype(int).to_numpy())
 
     # total lost per bank
     temporary_ext = full2.loc[full2["externally_investigated"] == 1]
@@ -385,7 +386,7 @@ for q in range(n_testing_days):
     bank_d_ext = sum(temporary_ext["bank_D"] * temporary_ext["ext_cost"])
     bank_e_ext = sum(temporary_ext["bank_E"] * temporary_ext["ext_cost"])
     vec_bank_ext_loss = np.array([bank_a_ext, bank_b_ext, bank_c_ext, bank_d_ext, bank_e_ext])
-    bank_loss_scams_ext.append(vec_bank_ext_loss + full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 0)].groupby(["bank_from"])["Amount"].sum().to_numpy())
+    bank_loss_scams_ext.append(vec_bank_ext_loss + full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 0)].groupby(["bank_from"])["Amount"].sum().fillna(0).astype(int).to_numpy())
 
     end = tm.time()
     loss_value_mem_scams.append(sum(full2[(full2["decided_investigations"] == 0) & (full2["is_scam"] == 1)]["Amount"]))
