@@ -137,9 +137,9 @@ training["day"] = (training["date"] - training["date"][0]).dt.days
 training["start_month"] = 0
 training["mid_month"] = 0
 training["end_month"] = 0
-training.loc[training.date.dt.day <= 10, "start_month"] = 1
-training.loc[(training.date.dt.day > 10) & (training.date.dt.day <= 20), "mid_month"] = 1
-training.loc[(training.date.dt.day > 20), "end_month"] = 1
+training.loc[training.date.dt.day <= 4, "start_month"] = 1
+training.loc[(training.date.dt.day > 4) & (training.date.dt.day <= 26), "mid_month"] = 1
+training.loc[(training.date.dt.day > 26), "end_month"] = 1
 
 # Begin loop
 n_training_days = len(np.unique(full["day"]))
