@@ -4,7 +4,6 @@ import xpress as xp
 import pandas as pd
 import numpy as np
 import random
-import math
 import time as tm
 
 start = tm.time()
@@ -145,18 +144,24 @@ training.loc[(training.date.dt.day > 20), "end_month"] = 1
 # Begin loop
 n_training_days = len(np.unique(full["day"]))
 
-testing_days_used = np.unique(full2["day"])[0:] # change this number to change the no. of testing days
+testing_days_used = np.unique(full2["day"])[30:31] # change this number to change the no. of testing days
 n_testing_days = len(testing_days_used)
 
 
 random.seed(4)
 loss_value_mem = []
+loss_value_mem_scams = []
+
 n_scam_undetected = []
 
+bank_gain = []
+bank_loss_scams = []
+bank_loss_scams_ext = []
 gain_value_mem = []
 n_scam_detected = []
 false_positive = []
 true_neg = []
+df_mem = pd.DataFrame({'test_day' : [], 'invest' : []})
 
 for q in range(n_testing_days):
     
@@ -357,11 +362,36 @@ for q in range(n_testing_days):
     false_positive_p3 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 1) & (full2["priority"] == 3)])[0]
     false_positive_p4 = np.shape(full2.loc[(full2["is_scam"] == 0) & (full2["decided_investigations"] == 1) & (full2["priority"] == 4)])[0]
 
+    
+
+    # I want to find a list of the cases investigated
+    # scam amount gained (investigated) per bank
+    bank_gain.append(full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 1)].groupby(["bank_from"])["Amount"].sum().to_numpy())
+
+    # scam lost pet bank
+    bank_loss_scams.append(full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 0)].groupby(["bank_from"])["Amount"].sum().to_numpy())
+
+    # total lost per bank
+    temporary_ext = full2.loc[full2["externally_investigated"] == 1]
+    temporary_ext["bank_A"] = temporary_ext["bank_A"] / temporary_ext["time_spent"]
+    temporary_ext["bank_B"] = temporary_ext["bank_B"] / temporary_ext["time_spent"]
+    temporary_ext["bank_C"] = temporary_ext["bank_C"] / temporary_ext["time_spent"]
+    temporary_ext["bank_D"] = temporary_ext["bank_D"] / temporary_ext["time_spent"]
+    temporary_ext["bank_E"] = temporary_ext["bank_E"] / temporary_ext["time_spent"]
+
+    bank_a_ext = sum(temporary_ext["bank_A"] * temporary_ext["ext_cost"])
+    bank_b_ext = sum(temporary_ext["bank_B"] * temporary_ext["ext_cost"])
+    bank_c_ext = sum(temporary_ext["bank_C"] * temporary_ext["ext_cost"])
+    bank_d_ext = sum(temporary_ext["bank_D"] * temporary_ext["ext_cost"])
+    bank_e_ext = sum(temporary_ext["bank_E"] * temporary_ext["ext_cost"])
+    vec_bank_ext_loss = np.array([bank_a_ext, bank_b_ext, bank_c_ext, bank_d_ext, bank_e_ext])
+    bank_loss_scams_ext.append(vec_bank_ext_loss + full2.loc[(full2["is_scam"] == 1) & (full2["decided_investigations"] == 0)].groupby(["bank_from"])["Amount"].sum().to_numpy())
 
     end = tm.time()
-    loss_value_mem.append(sum(full2[(full2["decided_investigations"] == 0) & (full2["is_scam"] == 1)]["Amount"]))
+    loss_value_mem_scams.append(sum(full2[(full2["decided_investigations"] == 0) & (full2["is_scam"] == 1)]["Amount"]))
+    loss_value_mem.append(sum(full2[(full2["decided_investigations"] == 0) & (full2["is_scam"] == 1)]["Amount"]) + spending)
     n_scam_undetected.append([n_priority_1_scam, n_priority_2_scam, n_priority_3_scam, n_priority_4_scam]) # False negative
-    gain_value_mem.append(sum(full2[(full2["decided_investigations"] == 1) & (full2["is_scam"] == 1)]["Amount"]) + spending)
+    gain_value_mem.append(sum(full2[(full2["decided_investigations"] == 1) & (full2["is_scam"] == 1)]["Amount"]))
     n_scam_detected.append([n_priority_1_invst, n_priority_2_invst, n_priority_3_invst, n_priority_4_invst]) # True positive
     false_positive.append([false_positive_p1, false_positive_p2, false_positive_p3, false_positive_p4])
     true_neg.append([true_neg_p1, true_neg_p2, true_neg_p3, true_neg_p4])
@@ -387,11 +417,36 @@ for q in range(n_testing_days):
     prio3_true_neg = np.array(true_neg)[:, 2]
     prio4_true_neg = np.array(true_neg)[:, 3]
 
+    bank_A_gain = np.array(bank_gain)[:,0]
+    bank_B_gain = np.array(bank_gain)[:,1]
+    bank_C_gain = np.array(bank_gain)[:,2]
+    bank_D_gain = np.array(bank_gain)[:,3]
+    bank_E_gain = np.array(bank_gain)[:,4]
 
-    np.savetxt(f"!day {test_day}.csv", [p for p in zip(testing_days_used, np.array(gain_value_mem), np.array(loss_value_mem), 
+    bank_A_loss_scams = np.array(bank_loss_scams)[:,0]
+    bank_B_loss_scams = np.array(bank_loss_scams)[:,1]
+    bank_C_loss_scams = np.array(bank_loss_scams)[:,2]
+    bank_D_loss_scams = np.array(bank_loss_scams)[:,3]
+    bank_E_loss_scams = np.array(bank_loss_scams)[:,4]
+
+    bank_A_loss_scams_ext = np.array(bank_loss_scams_ext)[:,0]
+    bank_B_loss_scams_ext = np.array(bank_loss_scams_ext)[:,1]
+    bank_C_loss_scams_ext = np.array(bank_loss_scams_ext)[:,2]
+    bank_D_loss_scams_ext = np.array(bank_loss_scams_ext)[:,3]
+    bank_E_loss_scams_ext = np.array(bank_loss_scams_ext)[:,4]
+
+
+    np.savetxt(f"!day {test_day}.csv", [p for p in zip(testing_days_used, np.array(gain_value_mem), np.array(loss_value_mem_scams),
+                                                       np.array(loss_value_mem), 
                                                        prio1_det, prio2_det, prio3_det, prio4_det,
                                                        prio1_undet, prio2_undet, prio3_undet, prio4_undet,
                                                        prio1_false_positive, prio2_false_positive, prio3_false_positive,prio4_false_positive,
-                                                       prio1_true_neg, prio2_true_neg, prio3_true_neg, prio4_true_neg)], delimiter=',', fmt='%s',
-                                                       header="test_day,gain_value,loss_value,prio1_det,prio2_det,prio3_det,prio4_det,prio1_undet,prio2_undet,prio3_undet,prio4_undet,prio1_false_positive,prio2_false_positive,prio3_false_positive,prio4_false_positive,prio1_true_neg,prio2_true_neg,prio3_true_neg,prio4_true_neg", 
+                                                       prio1_true_neg, prio2_true_neg, prio3_true_neg, prio4_true_neg,
+                                                       bank_A_gain, bank_B_gain, bank_C_gain, bank_D_gain, bank_E_gain,
+                                                       bank_A_loss_scams, bank_B_loss_scams, bank_C_loss_scams, bank_D_loss_scams, bank_E_loss_scams,
+                                                       bank_A_loss_scams_ext, bank_B_loss_scams_ext, bank_C_loss_scams_ext, bank_D_loss_scams_ext, bank_E_loss_scams_ext)], delimiter=',', fmt='%s',
+                                                       header="test_day,gain_value,loss_value_scams,total_loss,prio1_det,prio2_det,prio3_det,prio4_det,prio1_undet,prio2_undet,prio3_undet,prio4_undet,prio1_false_positive,prio2_false_positive,prio3_false_positive,prio4_false_positive,prio1_true_neg,prio2_true_neg,prio3_true_neg,prio4_true_neg,bank_A_gain,bank_B_gain,bank_C_gain,bank_D_gain,bank_E_gain,bank_A_loss_scams,bank_B_loss_scams,bank_C_loss_scams,bank_D_loss_scams,bank_E_loss_scams,bank_A_loss_scams_ext,bank_B_loss_scams_ext,bank_C_loss_scams_ext,bank_D_loss_scams_ext,bank_E_loss_scams_ext", 
                                                        comments="")
+    temp_new_df = pd.DataFrame({'test_day': test_day, 'invst': full2.loc[full2["decided_investigations"] == 1]["transaction_id"].to_numpy()})
+    df_mem = pd.concat([df_mem, temp_new_df], ignore_index = True)
+    df_mem.to_csv(f"!day {test_day} investigations.csv", index = False)
