@@ -144,7 +144,7 @@ training.loc[(training.date.dt.day > 26), "end_month"] = 1
 # Begin loop
 n_training_days = len(np.unique(full["day"]))
 
-testing_days_used = np.unique(full2["day"])[0:2] # change this number to change the no. of testing days
+testing_days_used = np.unique(full2["day"])[65:80] # change this number to change the no. of testing days
 n_testing_days = len(testing_days_used)
 
 

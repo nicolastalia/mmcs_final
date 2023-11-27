@@ -1,0 +1,2 @@
+test_day,gain_value,loss_value,prio1_det,prio2_det,prio3_det,prio4_det,prio1_undet,prio2_undet,prio3_undet,prio4_undet,prio1_false_positive,prio2_false_positive,prio3_false_positive,prio4_false_positive,prio1_true_neg,prio2_true_neg,prio3_true_neg,prio4_true_neg
+0.0,622.85,795.9,9.0,0.0,1.0,0.0,4.0,2.0,2.0,0.0,64.0,17.0,2.0,0.0,685.0,257.0,653.0,8.0
